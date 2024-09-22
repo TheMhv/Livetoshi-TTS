@@ -15,7 +15,7 @@ You need to specify the cuda version corresponding to pytorch:
 
 > https://pytorch.org/get-started/locally
 
-### Get Alby token
+### Get the Access Token
 
 You will need to create an access token with the `invoices:read` permission in your getalby account.
 
@@ -33,6 +33,8 @@ Set the `ALBY_TOKEN` with your getalby account access token.
 Change the another values according to your preference.
 
 ## Usage
+
+> You will need to configure the server address in the webhook of your getalby account to receive payment events.
 
 To run the server, just run:
 
