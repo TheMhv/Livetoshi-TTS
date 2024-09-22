@@ -15,7 +15,7 @@ import os
 load_dotenv()
 
 def get_model(name: str) -> dict | None:
-    for model_dir in glob(os.path.join('models', "*")):
+    for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR")), "*")):
         if os.path.isdir(model_dir):
             model_name = os.path.basename(model_dir)
             
