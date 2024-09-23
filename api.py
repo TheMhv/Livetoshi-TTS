@@ -177,7 +177,7 @@ def setup_routes(app: FastAPI):
                         "image": image_file[0] if image_file else None
                     }
 
-        return JSONResponse(content={"models": models})
+        return JSONResponse(content=models)
     
     @app.post("/receive")
     async def receive_webhook(request: WebhookRequest):
