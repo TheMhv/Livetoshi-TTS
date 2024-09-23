@@ -1,6 +1,7 @@
 from rvc_python.infer import RVCInference
 from dotenv import load_dotenv
 from api import create_app
+import asyncio
 import uvicorn
 import os
 
@@ -8,6 +9,7 @@ load_dotenv()
 
 # Create and configure FastAPI app
 app = create_app()
+app.queue = asyncio.Queue()
 
 # Set up server options
 host = str(os.getenv("SERVER_HOST"))

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveSatoshi API Widget</title>
+</head>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+#widget-container {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 8px;
+}
+</style>
+
+<body>
+    <div id="widget-container">
+        <div id="widget"></div>
+    </div>
+</body>
+
+<script>
+    const widgetElement = document.getElementById('widget');
+    let content;
+
+    // Create EventSource for SSE endpoint
+    const eventSource = new EventSource('/events');
+
+    eventSource.onopen = () => {
+        console.log('EventSource connected')
+        widgetElement.innerText = ''
+    }
+
+    eventSource.addEventListener('Message', function (event) {
+        message = JSON.parse(event.data);
+
+        // widgetElement.innerText = message.text;
+
+        var notifyAudio = new Audio("https://www.myinstants.com/media/sounds/hell_AJWSn3e.mp3");
+        var messageAudio = new Audio("data:audio/wav;base64," + message.audio);
+
+        notifyAudio.play();
+
+        setTimeout(() => {
+            messageAudio.play();
+        }, "2000");
+    });
+
+    eventSource.onerror = (error) => {
+        console.error('EventSource failed', error)
+        // eventSource.close()
+    }
+
+    function updateCoordinates(content) {
+        const paragraph = document.createElement('p');
+        paragraph.textContent = `Texto`;
+        widgetElement.appendChild(paragraph);
+    }
+</script>
+</html>

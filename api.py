@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import Response, JSONResponse, StreamingResponse
+from starlette.responses import FileResponse
 from rvc_python.infer import RVCInference
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ from glob import glob
 import requests
 import edge_tts
 import tempfile
-import shutil
+import base64
 import json
 import os
 
@@ -111,9 +112,7 @@ async def rvc(model: dict, audio_path: str):
     rvc.infer_file(audio_path, output_path)
     rvc.unload_model()
 
-    audio_data = tmp_output.read()
-
-    shutil.copyfile(tmp_output.name, 'teste.wav')
+    audio_data = base64.b64encode(tmp_output.read())
 
     tmp_output.close()
     os.unlink(tmp_output.name)
@@ -123,12 +122,13 @@ async def rvc(model: dict, audio_path: str):
 async def generate(text: str, model_name: str | None):
     # Get model params
     model = get_model(model_name)
+    print(model)
 
     # Generate TTS audio
     tts_file = await tts(model=model, text=text)
 
     if not model:
-        audio_data = tts_file.read()
+        audio_data = base64.b64encode(tts_file.read())
         
         tts_file.close()
         os.unlink(tts_file.name)
@@ -151,11 +151,16 @@ class WebhookRequest(BaseModel):
     payment_hash: str
 
 def setup_routes(app: FastAPI):
+    async def getEvents():
+        while True:
+            event = await app.queue.get()
+            yield f"event: Message\ndata: {event}\n\n"
+
     @app.get("/models")
     def list_models():
         models = {}
 
-        for model_dir in glob(os.path.join('models', "*")):
+        for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR")), "*")):
             if os.path.isdir(model_dir):
                 model_name = os.path.basename(model_dir)
 
@@ -182,9 +187,22 @@ def setup_routes(app: FastAPI):
                 model_name=payment['metadata']['model']
             )
 
+            await app.queue.put(json.dumps({
+                "text": payment['metadata']['text'],
+                "audio": audio_data.decode("utf-8"),
+            }))
+
             return Response(content=audio_data, media_type="audio/wav")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+    @app.get("/widget")
+    def widget():
+        return FileResponse('widget/index.html')
+
+    @app.get("/events")
+    def widgetEvents():
+        return StreamingResponse(getEvents(), media_type="text/event-stream")
 
 def create_app():
     app = FastAPI()
