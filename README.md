@@ -6,7 +6,7 @@ An API server for LiveSatoshi project
 > Recommended python version: 3.10
 
 ```bash
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 ### GPU installation (Recommended)
 Install the PyTorch-related core dependencies
@@ -25,7 +25,7 @@ You will need to create an access token with the `invoices:read` permission in y
 
 Copy the example .env
 ```bash
-cp .env.example .env
+$ cp .env.example .env
 ```
 
 Set the `ALBY_TOKEN` with your getalby account access token.
@@ -35,9 +35,15 @@ Change the another values according to your preference.
 ## Usage
 
 > You will need to configure the server address in the webhook of your getalby account to receive payment events.
+> REMEMBER TO ADD THE `/receive` ROUTE
 
-To run the server, just run:
+* Download some RVC models
+    - You can find some at https://applio.org/models
+* Extract and put your models into `MODELS_DIR`
+* Run the server:
 
 ```bash
-python run.py
+$ python run.py
 ```
+
+* And set the url with `/widget` route for your streaming software
