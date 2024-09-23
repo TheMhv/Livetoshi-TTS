@@ -49,3 +49,30 @@ $ python run.py
 ```
 
 * And set the url with `/widget` route for your streaming software
+
+## Tips
+
+You can configure some parameters for TTS and RVC models.
+
+You must create a `params.json` file inside the folder of the model you want to configure.
+
+Here is an example of the `params.json` file:
+```json
+{
+    "tts": {
+        "voice": "pt-BR-AntonioNeural",
+        "rate": "+0%",
+        "volume": "+0%",
+        "pitch": "+0Hz"
+    },
+    "rvc": {
+        "f0method": "rmvpe",
+        "f0up_key": 0,
+        "index_rate": 0.75,
+        "filter_radius": 3,
+        "resample_sr": 0,
+        "rms_mix_rate": 0.25,
+        "protect": 0.33
+    }
+}
+```
