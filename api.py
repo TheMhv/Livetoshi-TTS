@@ -122,7 +122,6 @@ async def rvc(model: dict, audio_path: str):
 async def generate(text: str, model_name: str | None):
     # Get model params
     model = get_model(model_name)
-    print(model)
 
     # Generate TTS audio
     tts_file = await tts(model=model, text=text)
@@ -142,10 +141,6 @@ def getPayment(payment_hash: str):
     headers = {"Authorization": f"Bearer {str(os.getenv('ALBY_TOKEN'))}"}
     response = requests.get(f"https://api.getalby.com/invoices/{payment_hash}", headers=headers)
     return response.json()
-
-class Metadata(BaseModel):
-    text: str
-    model: str | None
 
 class WebhookRequest(BaseModel):
     payment_hash: str
@@ -181,14 +176,20 @@ def setup_routes(app: FastAPI):
 
             if payment['state'] != 'SETTLED':
                 raise HTTPException(status_code=400, detail="Payment was not made")
+            
+            amount = payment.get('amount', 'alguns')
+            name = payment.get('metadata', {}).get('name', 'Anônimo')
+            text = payment.get('metadata', {}).get('text', '')
+
+            text = f"{name} enviou {amount} satoshis: {text}"
 
             audio_data = await generate(
-                text=payment['metadata']['text'],
+                text=text,
                 model_name=payment['metadata']['model']
             )
 
             await app.queue.put(json.dumps({
-                "text": payment['metadata']['text'],
+                "text": text,
                 "audio": audio_data.decode("utf-8"),
             }))
 
