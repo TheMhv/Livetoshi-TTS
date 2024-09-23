@@ -50,8 +50,10 @@ async def tts(model: dict | None, text: str):
         'pitch': "+0Hz"
     }
 
-    if model:
-        tts_params = model.get('params', {}).get('tts', tts_params)
+    if not model:
+        model = {}
+
+    tts_params = model.get('params', {}).get('tts', tts_params)
 
     VOICE = tts_params.get('voice', "pt-BR-ThalitaNeural")
     RATE = tts_params.get('rate', "+0%")
