@@ -45,7 +45,7 @@ def get_model(name: str) -> dict | None:
                 if image_file:
                     model['image'] = image_file[0]
                 
-                if params_file
+                if params_file:
                     model['params'] = params_file
                 
                 return model
