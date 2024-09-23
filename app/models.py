@@ -1,7 +1,13 @@
+from typing import Optional
 from pydantic import BaseModel
 
 class WebhookRequest(BaseModel):
     payment_hash: str
+
+class InvoiceMetadata(BaseModel):
+    name: str
+    text: str
+    model: Optional[str] = None
 
 class TTSParams(BaseModel):
     voice: str = "pt-BR-ThalitaNeural"
