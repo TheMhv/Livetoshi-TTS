@@ -172,6 +172,9 @@ def setup_routes(app: FastAPI):
     @app.post("/receive")
     async def receive_webhook(request: WebhookRequest):
         try:
+            if not payment['metadata']['text']:
+                raise HTTPException(status_code=400, detail="No text provided")
+
             payment = getPayment(request.payment_hash)
 
             if payment['state'] != 'SETTLED':
