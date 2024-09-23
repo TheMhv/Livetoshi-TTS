@@ -207,7 +207,7 @@ def setup_routes(app: FastAPI):
                 "audio": audio_data.decode("utf-8"),
             }))
 
-            return Response(content=audio_data, media_type="audio/wav")
+            return Response(status_code=200, content="ok")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
