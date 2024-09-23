@@ -163,7 +163,7 @@ def setup_routes(app: FastAPI):
 
     @app.get("/models")
     def list_models():
-        models = {}
+        models = []
 
         for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR")), "*")):
             if os.path.isdir(model_dir):
@@ -173,9 +173,10 @@ def setup_routes(app: FastAPI):
                 image_file = glob(os.path.join(model_dir, "image.*"))
                 
                 if pth_file:
-                    models[model_name] = {
+                    models.append({
+                        "name": model_name,
                         "image": image_file[0] if image_file else None
-                    }
+                    })
 
         return JSONResponse(content=models)
     
