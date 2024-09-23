@@ -45,7 +45,7 @@ Change the another values according to your preference.
 * Run the server:
 
 ```bash
-$ python run.py
+$ python main.py
 ```
 
 * And set the url with `/widget` route for your streaming software
