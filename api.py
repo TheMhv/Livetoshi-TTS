@@ -172,23 +172,24 @@ def setup_routes(app: FastAPI):
     @app.post("/receive")
     async def receive_webhook(request: WebhookRequest):
         try:
+            payment = getPayment(request.payment_hash)
+
             if not payment['metadata']['text']:
                 raise HTTPException(status_code=400, detail="No text provided")
-
-            payment = getPayment(request.payment_hash)
 
             if payment['state'] != 'SETTLED':
                 raise HTTPException(status_code=400, detail="Payment was not made")
             
+            text = payment['metadata']['text']
             amount = payment.get('amount', 'alguns')
             name = payment.get('metadata', {}).get('name', 'Anônimo')
-            text = payment.get('metadata', {}).get('text', '')
+            model = payment.get('metadata', {}).get('model', None)
 
             text = f"{name} enviou {amount} satoshis: {text}"
 
             audio_data = await generate(
                 text=text,
-                model_name=payment['metadata']['model']
+                model_name=model
             )
 
             await app.queue.put(json.dumps({
