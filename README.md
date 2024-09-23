@@ -8,6 +8,8 @@ An API server for LiveSatoshi project
 ```bash
 $ pip install -r requirements.txt
 ```
+> If you have any problems with the omegaconf version, try downgrading pip to version 24.0 `python.exe -m pip install pip==24.0`
+
 ### GPU installation (Recommended)
 Install the PyTorch-related core dependencies
 
