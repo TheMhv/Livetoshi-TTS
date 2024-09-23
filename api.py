@@ -34,13 +34,21 @@ def get_model(name: str) -> dict | None:
                 params_file if params_file else None
 
             if pth_file:
-                return {
+                model = {
                     "name": model_name,
-                    "pth": pth_file[0],
-                    "index": index_file[0] if index_file else None,
-                    "image": image_file[0] if image_file else None,
-                    "params": params_file if params_file else None
+                    "pth": pth_file[0]
                 }
+
+                if index_file:
+                    model['index'] = index_file[0],
+                
+                if image_file:
+                    model['image'] = image_file[0]
+                
+                if params_file
+                    model['params'] = params_file
+                
+                return model
             
 async def tts(model: dict | None, text: str):
     tts_params = {
