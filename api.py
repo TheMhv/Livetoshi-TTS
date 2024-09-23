@@ -16,7 +16,7 @@ import os
 load_dotenv()
 
 def get_model(name: str) -> dict | None:
-    for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR")), "*")):
+    for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR", 'models')), "*")):
         if os.path.isdir(model_dir):
             model_name = os.path.basename(model_dir)
             
@@ -101,8 +101,8 @@ async def rvc(model: dict, audio_path: str):
     PROTECT = rvc_params.get('protect', 0.33)
 
     rvc = RVCInference(
-        models_dir=str(os.getenv("MODELS_DIR")),
-        device=str(os.getenv("DEVICE"))
+        models_dir=str(os.getenv("MODELS_DIR", 'models')),
+        device=str(os.getenv("DEVICE", 'cuda:0'))
     )
     
     rvc.set_params(
@@ -165,7 +165,7 @@ def setup_routes(app: FastAPI):
     def list_models():
         models = []
 
-        for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR")), "*")):
+        for model_dir in glob(os.path.join(str(os.getenv("MODELS_DIR"), 'models'), "*")):
             if os.path.isdir(model_dir):
                 model_name = os.path.basename(model_dir)
 
@@ -187,11 +187,18 @@ def setup_routes(app: FastAPI):
 
             if not payment['metadata']['text']:
                 raise HTTPException(status_code=400, detail="No text provided")
+            
+            if int(payment['amount']) < int(os.getenv("MIN_SATOSHI_QNT", 100)):
+                raise HTTPException(status_code=400, detail="Minimum payment not made")
 
             if payment['state'] != 'SETTLED':
                 raise HTTPException(status_code=400, detail="Payment was not made")
             
             text = payment['metadata']['text']
+
+            if text:
+                text = text[:int(os.getenv("MAX_TEXT_LENGHT", 200))]
+
             amount = payment.get('amount', 'alguns')
             name = payment.get('metadata', {}).get('name', 'Anônimo')
             model = payment.get('metadata', {}).get('model', None)
