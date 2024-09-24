@@ -39,41 +39,51 @@ def setup_routes(app: FastAPI):
             yield f"event: Message\ndata: {event}\n\n"
 
     @app.post("/create_invoice")
-    async def create_invoice(background_tasks: BackgroundTasks, amount: int, metadata: InvoiceMetadata):
+    async def create_invoice(amount: int, metadata: InvoiceMetadata):
         try:
             if amount < config.MIN_SATOSHI_QNT:
                 raise HTTPException(status_code=400, detail=f"Minimum amount is {config.MIN_SATOSHI_QNT} satoshis")
             
             invoice = create_payment(amount, metadata.dict())
             payment_hash = invoice['payment_hash']
+            qr_code = invoice['qr_code_svg'] or invoice['qr_code_svg']
             
             # Create an event for this payment
             pending_payments[payment_hash] = asyncio.Event()
             
-            # Set up a background task to wait for payment
-            background_tasks.add_task(wait_for_payment, payment_hash)
-            
-            return StreamingResponse(payment_stream(payment_hash), media_type="text/event-stream")
+            return StreamingResponse(payment_stream(payment_hash, qr_code), media_type="text/event-stream")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to create invoice: {str(e)}")
 
-    async def payment_stream(payment_hash: str):
+    async def payment_stream(payment_hash: str, qr_code: str):
         try:
+            yield f"data: {json.dumps({'qr_code': qr_code})}\n\n"
+
             # Wait for the payment to be settled
-            await pending_payments[payment_hash].wait()
+            wait_task = asyncio.create_task(wait_for_payment(payment_hash))
             
+            # Wait for the payment to settle or timeout after 5 minutes
+            await asyncio.wait_for(pending_payments[payment_hash].wait(), timeout=300)
+
             # Payment settled, yield the success message
             yield f"data: {json.dumps({'status': 'settled'})}\n\n"
         finally:
             # Clean up
-            del pending_payments[payment_hash]
+            pending_payments.pop(payment_hash, None)
 
     async def wait_for_payment(payment_hash: str):
+        start_time = asyncio.get_event_loop().time()
         while True:
             payment = get_payment(payment_hash)
+            
             if payment['state'] == 'SETTLED':
                 pending_payments[payment_hash].set()
                 break
+
+            if asyncio.get_event_loop().time() - start_time > 300:
+                # 5 minutes timeout
+                break
+
             await asyncio.sleep(3)  # Wait for 3 seconds before checking again
 
     @app.get("/get_config")

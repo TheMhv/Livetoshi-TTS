@@ -5,9 +5,9 @@ class WebhookRequest(BaseModel):
     payment_hash: str
 
 class InvoiceMetadata(BaseModel):
-    name: str
     text: str
-    model: Optional[str] = None
+    name: str = None
+    model: str = None
 
 class TTSParams(BaseModel):
     voice: str = "pt-BR-ThalitaNeural"
