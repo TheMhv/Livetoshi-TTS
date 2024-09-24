@@ -6,32 +6,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiveSatoshi API Widget</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: transparent;
+            overflow: hidden;
         }
 
         #widget-container {
             text-align: center;
             padding: 20px;
-            border: 1px solid #ccc;
-            background-color: #fff;
-            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.9);
             display: none;
             max-width: 80%;
             word-wrap: break-word;
+        }
+
+        #widget {
+            color: #ffffff;
+            font-size: 24px;
+            line-height: 1.4;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .animate-in {
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+
+        .animate-out {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
         }
     </style>
 </head>
@@ -52,17 +92,19 @@
         const WIDGET_HIDE_DELAY = 5000;
 
         function showWidget(text) {
-            widgetElement.innerText = text;
+            widgetElement.innerHTML = text;
             widgetContainer.style.display = 'block';
             requestAnimationFrame(() => {
-                widgetContainer.style.opacity = '1';
+                widgetContainer.classList.add('animate-in');
             });
         }
 
         function hideWidget() {
-            widgetContainer.style.opacity = '0';
+            widgetContainer.classList.remove('animate-in');
+            widgetContainer.classList.add('animate-out');
             setTimeout(() => {
                 widgetContainer.style.display = 'none';
+                widgetContainer.classList.remove('animate-out');
             }, 500);
         }
 
@@ -100,17 +142,28 @@
                     const messageAudio = new Audio("data:audio/wav;base64," + message.audio);
 
                     await playAudio(notifyAudio);
-                    showWidget(message.text);
+                    showWidget(formatMessage(message.text));
                     await new Promise(resolve => setTimeout(resolve, WIDGET_DISPLAY_DELAY));
 
                     await playAudio(messageAudio);
                     hideWidget();
                     await new Promise(resolve => setTimeout(resolve, WIDGET_HIDE_DELAY));
                 } catch (error) {
-                    console.error('Erro ao processar a mensagem:', error);
+                    console.error('Error processing message:', error);
                     await new Promise(resolve => setTimeout(resolve, QUEUE_CHECK_INTERVAL));
                 }
             }
+        }
+
+        function formatMessage(text) {
+            // Add line break after "sent X satoshis:" part
+            const parts = text.split(': ');
+            if (parts.length > 1) {
+                const header = parts[0] + ':';
+                const message = parts.slice(1).join(': ');
+                return `<strong>${header}</strong><br>${message}`;
+            }
+            return text;
         }
 
         function playAudio(audio) {
@@ -125,20 +178,20 @@
             const eventSource = new EventSource(EVENT_SOURCE_URL);
 
             eventSource.onopen = () => {
-                console.log('EventSource conectado');
+                console.log('EventSource connected');
                 widgetElement.innerText = '';
             };
 
             eventSource.addEventListener('Message', function (event) {
                 const message = JSON.parse(event.data);
-                console.log('Mensagem recebida:', message);
+                console.log('Message received:', message);
                 queue.put(message);
             });
 
             eventSource.onerror = (error) => {
-                console.error('Erro no EventSource:', error);
+                console.error('EventSource error:', error);
                 eventSource.close();
-                setTimeout(setupEventSource, 5000); // Tenta reconectar após 5 segundos
+                setTimeout(setupEventSource, 5000); // Try to reconnect after 5 seconds
             };
 
             return eventSource;
