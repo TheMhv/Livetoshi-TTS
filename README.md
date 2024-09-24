@@ -1,5 +1,5 @@
 # Livesatoshi API Server
-An API server for LiveSatoshi project
+The API server for [LiveSatoshi](https://github.com/TheMhv/LiveSatoshi)
 
 ## Instalation
 
