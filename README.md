@@ -52,6 +52,14 @@ $ python main.py
 
 ## Tips
 
+### Documentation
+
+FastAPI provides route documentation automatically.
+
+You can check the `/docs` route for [Swagger UI](https://github.com/swagger-api/swagger-ui) format or the `/redoc` route for [ReDoc](https://github.com/Redocly/redoc) format.
+
+### Model configuration
+
 You can configure some parameters for TTS and RVC models.
 
 You must create a `params.json` file inside the folder of the model you want to configure.
