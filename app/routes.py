@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 import json
 import base64
@@ -97,6 +97,17 @@ def setup_routes(app: FastAPI):
             # Add any other configuration parameters here
         })
     
+    @app.get("/models/{model_name}/{image_name}")
+    async def get_model_image(model_name: str, image_name: str):
+        try:
+            image_path = os.path.join(config.MODELS_DIR, model_name, image_name)
+            if os.path.exists(image_path):
+                return FileResponse(image_path)
+            else:
+                return {"error": "Image not found"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
     @app.post("/receive")
     async def receive_webhook(request: WebhookRequest):
         try:
