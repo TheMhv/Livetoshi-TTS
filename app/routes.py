@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response, JSONResponse, StreamingResponse
-from starlette.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import json
 import base64
 import asyncio
@@ -32,6 +32,7 @@ async def generate(text: str, model_name: str | None):
 
 def setup_routes(app: FastAPI):
     app.queue = asyncio.Queue()
+    app.mount("/widget", StaticFiles(directory="widget", html=True), name="widget")
 
     async def get_events():
         while True:
@@ -127,10 +128,6 @@ def setup_routes(app: FastAPI):
             return Response(status_code=200, content="ok")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-
-    @app.get("/widget")
-    def widget():
-        return FileResponse('widget/index.html')
 
     @app.get("/events")
     def widget_events():
