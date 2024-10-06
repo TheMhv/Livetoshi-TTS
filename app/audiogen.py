@@ -5,7 +5,7 @@ from app.tts import tts
 from app.utils import get_model
 
 async def audiogen(text: str, model_name: str | None):
-    print(text, model_name)
+    print(text)
 
     model = get_model(model_name) if model_name else None
     tts_file = await tts(model=model, text=text)
