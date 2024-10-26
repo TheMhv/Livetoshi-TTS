@@ -8,6 +8,7 @@ The API server for [LiveSatoshi](https://github.com/TheMhv/LiveSatoshi)
 ```bash
 $ pip install -r requirements.txt
 ```
+> [!NOTE]
 > If you have any problems with the omegaconf version, try downgrading pip to version 24.0 `python.exe -m pip install pip==24.0`
 
 ### GPU installation (Recommended)
